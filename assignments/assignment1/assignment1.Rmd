@@ -1,0 +1,60 @@
+---
+title: "assignment 1"
+output: html_document
+---
+
+### 3.1
+
+We chose a [dataset](https://climatedata.imf.org/datasets/b13b69ee0dde43a99c811f592af4e821/explore) that includes climate related disaster frequencies. Each observation is grouped by year and country and contains various country information (ISO codes, name, etc.), a description of the indicator, the unit, the source of the data and CTS related info. The data is in wide format, meaning that the years, within the range 1980-2024, are columns instead of values.
+
+```{r eval=FALSE}
+library(tidyverse)
+```
+
+```{r}
+data = read_csv('./data/phys_risks_climate_related_distaster_frequency.csv')
+glimpse(data)
+```
+
+
+### 3.3
+
+```{r}
+num_rows = 10
+```
+
+The `count` function allows us to group by and count all distinct entries of a specified column.
+
+For example, we can first group by country and then apply `head` which will output the first 10 rows:
+
+```{r}
+ head(count(data, Country), n = num_rows)
+```
+
+Otherwise, if we first apply `head` and subsequently `count`, since the first 10 entries contain the same country, we will obtain a single row (with n = 10):
+
+```{r}
+count(head(data, n = num_rows), Country)
+```
+
+### 3.1
+
+```{r}
+ggplot(data) # ??
+```
+
+### 3.7
+
+
+```{r}
+years = as.character(1980:2024) # create a range 1980-2024 containing all col names
+
+long_data = pivot_longer(data, years, names_to = 'Year', values_to = 'Frequency')
+
+head(arrange(long_data, desc(Frequency)))
+```
+
+
+
+
+
