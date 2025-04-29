@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1 Data analytics & communication"
-author: "Sebastian Pusch (S5488079)"
+author: "Sebastian Pusch (S5488079), Ivan Hegeman (s4789725)"
 output: 
   pdf_document:
     number_sections: true
@@ -28,7 +28,7 @@ In our view, the main weakness of this research lies in the decision to have par
 
 ## Potential BSc project
 
-A potential bachelor project we would be interested in is researching the creation of false memories through a cognitive model. More specifically, we aim to model how, when participants are presented with a list of semantically related words (such as 'bed,' 'cushion,' 'moon,' etc) they may later falsely remember seeing a related but non-presented word like 'sleep.' We would develop a cognitive model that performs the Deese-Roediger-McDermott (DRM) task, replicating the experimental setup originally designed by Deese and later improved by Roediger and McDermott, in order to investigate how false memories are formed. The goal of this project would be to develop a cognitive model that replicates the results of Roediger and McDermott’s research, aiming to mimic human behavior as closely as possible.
+A potential bachelor project we would be interested in is researching the creation of false memories through a cognitive model. More specifically, we aim to model how, when participants are presented with a list of semantically related words (such as 'bed,' 'cushion,' 'moon,' etc) they may later falsely remember seeing a related but non-presented word like 'sleep.' We would develop a cognitive model that performs the Deese-Roediger-McDermott (DRM) task, replicating the experimental setup originally designed by Deese and later improved by Roediger and McDermott, in order to investigate how false memories are formed. The goal of this project would be to develop a cognitive model that replicates the results of Roediger and McDermott’s research, aiming to mimic human behavior as closely as possible in order to understand through our model how false memories are created.
 
 ## Reproducibility and replicability
 
@@ -57,6 +57,9 @@ data = read.csv('./data/phys_risks_climate_related_distaster_frequency.csv')
 ```
 
 ## Mutate
+```{r}
+
+```
 
 ## Count
 
@@ -79,6 +82,9 @@ count(head(data, n = num_rows), Country)
 ```
 
 ## Filter
+```{r}
+
+```
 
 ## Make a plot with ggplot
 
@@ -97,6 +103,11 @@ data %>%
   theme_minimal()
 ```
 
+## Summarizing data
+```{r}
+
+```
+
 ## Spreading and gathering data
 
 ```{r warning=FALSE}
@@ -105,6 +116,11 @@ years = paste0('X', as.character(1980:2024)) # create a range 1980-2024 containi
 long_data = pivot_longer(data, years, names_to = 'Year', values_to = 'Frequency')
 
 head(arrange(long_data, desc(Frequency)))
+```
+
+## Separating and uniting
+```{r}
+
 ```
 
 # Contributions
