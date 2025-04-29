@@ -21,8 +21,7 @@ We found that this research has a very thorough participant selection, which see
 In our view, the main weakness of this research lies in the decision to have participants undergo both the mindfulness and positive fantasizing interventions, which complicates reproducibility. As the author points out, this setup increases participants' familiarity with the task, leading to greater task fluency. This could skew results in the second intervention phase, as participants might complete the task more easily simply due to practice, which could in turn leave more room for PC-like thought patterns to emerge. This raises concerns about the reliability of objective measurements, especially if improved performance is driven by task repetition rather than the intervention itself. Additionally, while a one-month wash-out period was introduced to minimize carry-over effects, this might not be enough to account for psychological changes in rMDD individuals, who are particularly prone to shifts in mood and thinking over time. This makes it harder to draw clear conclusions from within-subject comparisons, as observed differences may reflect these natural changes rather than the specific effects of the interventions.
 
 ## Potential Improvements
-
-...
+In our opinion, the use of a between subjects design would be better suited for this experiment, 
 
 # 2. Making sure a planned Bachelor project is replicable and reproducible
 
@@ -58,8 +57,11 @@ data = read.csv('./data/phys_risks_climate_related_distaster_frequency.csv')
 
 ## Mutate
 ```{r}
+data_mutated <- mutate(data, difference_80_24 = X1980 - X2024)
 
+head(data_mutated$difference_80_24)
 ```
+The mutate() command adds a new column that is a function of existing variables. In our case, we create a new column that computes the difference in climate disasters between 1980 and 2024 for each type.
 
 ## Count
 
@@ -80,11 +82,15 @@ Otherwise, if we first apply `head` and subsequently `count`, since the first 10
 ```{r}
 count(head(data, n = num_rows), Country)
 ```
-
 ## Filter
 ```{r}
+head(subset(data, select = c("Country", "X1980", "X2024")))
+filtered_data <- filter(data, Indicator == "Climate related disasters frequency, Number of Disasters: TOTAL")
 
+head(subset(filtered_data, select = c("Country", "X1980", "X2024")))
+  
 ```
+The filter() command is used to keep only the rows that satisfy certain conditions (similarly to how subset() only keeps certain columns). In our case, we use it to only keep the total number of climate disasters, and we also subset the result to only keep the years 1980 and 2024 because otherwise our table would be too big.
 
 ## Make a plot with ggplot
 
@@ -105,8 +111,14 @@ data %>%
 
 ## Summarizing data
 ```{r}
+head(subset(data, select = c("Country", "X2024")))
+summarized_data <- data %>%
+  group_by(Country) %>%
+  summarize(total = sum(X2024, na.rm=TRUE))
 
+head(summarized_data)
 ```
+Summarize is used to summarize each group to one row. In our case, we used it to get the sum of all the values in the 2024 column, grouped by Country.
 
 ## Spreading and gathering data
 
@@ -120,7 +132,17 @@ head(arrange(long_data, desc(Frequency)))
 
 ## Separating and uniting
 ```{r}
-
+head(subset(data, select=c("Country", "X2023", "X2024")))
+united_data <- unite(data, "2023-2024", X2023:X2024, sep="-", na.rm=TRUE)
+head(subset(united_data, select=c("Country", "2023-2024")))
 ```
+The unite() command unites multiple columns into one, and enables us to choose the separator. In our case, we chose to unite the columns 2023 and 2024.
+```{r}
+separated_data <- separate(united_data, "2023-2024", c("new_2023", "new_2024"), sep = "-", fill="right")
+head(subset(separated_data, select=c("Country", "new_2023", "new_2024")))
+```
+The separate() command separates a column into multiple ones using a regex filter. In our case, we once again separated the columns we united. Something interesting to note is that the new_2023 column contains empty values, while the new_2024 column contains NA values, which is because we decided to use fill = "right", which means that the right column will be filled with missing values.
 
 # Contributions
+Ivan 50%
+Sebastian 50%
