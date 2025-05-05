@@ -1,6 +1,9 @@
 ---
-title: "assignment2"
-output: html_document
+title: "Data Science Assignment 2"
+author: "Sebastian Pusch (S5488079), Ivan Hegeman (s4789725)"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -38,6 +41,34 @@ scale = TRUE)
 summary(svm.linear)
 
 ```
+```{r}
+# do the stats on the training data
+train.pred <- predict(svm.linear,equal_training_data)
+# compute confusion matrix
+err.tr1 <- table(equal_training_data$class,train.pred)
+err.tr1
+# compute error rate
+tr.err1 <- (1 - (sum(diag(err.tr1))/sum(err.tr1)))
+cat("Training error rate:", tr.err1, "\n")
+# now look at how the model does on the testing data
+test.pred <- predict(svm.linear,testing_data)
+err.te1 <- table(testing_data$class,test.pred)
+err.te1
+te.err1 <- (1- (sum(diag(err.te1))/sum(err.te1)))
+cat("Testing error rate:", te.err1, "\n")
+
+# for a linear SVM the feature importance can be directly extracted from the coefficients
+coefficients <- t(svm.linear$coefs) %*% svm.linear$SV
+importance <- abs(coefficients)
+importance <- importance / max(importance)
+cat("Importance:\n")
+importance
+```
+First, let's examine how the model performs at predicting the training set. As we can see from the confusion matrix, the model correctly predicted 131 negative class cases (i.e. predicted correctly that the participant did not make an error) and 182 positive class cases (i.e. predicted correctly that the participant made an error). Unfortunately, the model incorrectly predicted 21 negative class cases (i.e. incorrectly predicted that the participant did not make an error), and 72 positive class cases (i.e. incorrectly predicted that the participant made an error).
+
+Now let's examine the test data predictions. As we can see from the confusion matrix, the model correctly predicted 247 negative class cases (i.e., correctly predicted that the participant did not make an error) and 55 positive class cases (i.e., correctly predicted that the participant made an error). However, it also incorrectly predicted 5 negative class cases (i.e., incorrectly predicted that the participant did not make an error), and 203 positive class cases (i.e., incorrectly predicted that the participant made an error).
+
+For both the training data and the test data, the error rates are high (23% and 41% respectively). Our model is probably underfitting, which can be due to many things (such as the model being too simple, or the features selected being non-relevant). In our case, I would argue that the feature selection is suboptimal, as we can see from the importance table that the isDots variable's importance is extremely high (removing the control condition data would make sense here, which would allow us to remove this feature and only focus on the important ones). Also, the cohVec variable seems to be less important to the prediction of the model than I would have expected, however this can be explained by the fact that the coherence was adjusted for the participants to have approximately 70% and 90% correct (which means that some participants could have 70% correct for 10% coherence and other for 2% coherence), i.e. the coherence does not mean much wrt the correctness. 
 
 # ROC analysis
 
@@ -54,6 +85,31 @@ auc <- auc@y.values[[1]]
 (a) ROC (Receiver Operator Characteristic) is a plot that display the performance of a model across different classification threshold. The y-axis represents the True Positive Rate, meaning the number of true positive over the number of actual positives. The x-axis represents the False Positive Rate, which is the number of false positives over the total number of actual negatives. Higher thresholds result in fewer false positives at the cost of missing more true positives, while lower threshold lead to capturing more true positive but with more false positives. The plot captures this trend (assuming a non-random classifier) and helps choosing an appropriate threshold.
 
 (b) The ROC curve shows that the model performs better than random guessing, as it achieves a True Positive Rate of about 0.65 with a False Positive Rate below 0.2. This indicates the model is able to correctly identify a portion of the actual positives while keeping false positives relatively low at that threshold. While better than random guessing, a TPR 0.65 (the model identifies only 65% of the positive cases) is not particularly strong.
+
+# Data problems
+```{r}
+# outliers
+ggplot(training_data, aes(x = x.RT, fill = class)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density plot of RT by class", x = "Response time", fill = "Error") + 
+  theme_minimal()
+```
+The density plot shows that the response time variable has a significant number of outliers, with a clear right tail for both class 0 (correct responses) and class 1 (errors). The right-skewed distribution is present in both classes, and indicates that there are instances with much longer response times. These longer response times could suggest issues like distractions or difficulty with the task.
+
+```{r}
+# correlation
+cor(training_data[, c("x.RT", "x.cohVec", "x.blocknum")])
+```
+As we can see from the correlation matrix, there is a slight negative correlation between response time and coherence, suggesting that as task difficulty decreases, response time tends to decrease slightly. However, this relationship is weak. The correlation between response time and block number is very weak, indicating little to no connection between these variables. Similarly, the correlation between coherence factor and block number is extremely weak, showing that these two variables are almost uncorrelated. Overall, the low correlation values suggest that these variables are not strongly related to one another.
+
+```{r}
+# useless variable
+ggplot(training_data, aes(x = factor(class), fill = factor(x.isDots))) +
+  geom_bar(position = "dodge") +
+  labs(title = "class vs isDots", x = "Class", fill = "isDots") + 
+  theme_minimal()
+```
+From this graph, we can observe that in the control condition, participants almost always respond correctly, while in the actual test condition, there is a way higher likelihood of errors. This obviously makes sense. However, we do not see why this variable was included in training the SVM, as the control condition almost always results in correct responses, making it less informative for predicting errors. Additionally, given the noticeable difference between the control and actual test conditions, this variable is likely to have a significant impact on the SVM’s performance, potentially skewing the results or dominating the model’s predictions (which we can also see from the "importance" tests from part 1 of this assignment).
 
 # Model optimization
 
