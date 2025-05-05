@@ -1,0 +1,116 @@
+---
+title: "assignment2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(ROCR)
+require(e1071)
+require(dplyr)
+```
+
+```{r}
+
+dat = read.table('./data/decision.dat', header = T)
+subj8 = dat[dat$subjNo == 8,]
+
+# prepare training data--make sure there are no duplicate columns , and also no columns that are constant
+training_data = data.frame(x = dat[,c(1,3:5,7:8)], class = as.factor(dat$ER))
+training_data = data.frame(x = subj8[,c(3:5,7:8)], class = as.factor(subj8$ER))
+# set apart testing data
+samp <- sample(nrow(training_data),round(0.2*nrow(training_data)))
+testing_data <- training_data[samp,]
+training_data2 <- training_data[-samp,]
+subj8training <- subj8[-samp,]
+# for the training data select an equal number of each class (we need the original subj8 to find the ER
+errorInd <- which(subj8training$ER==1)
+Nerrors <- length(errorInd)
+correctInd <- which(subj8training$ER==0)
+sampleCorr <- sample(correctInd,Nerrors)
+equal_training_data <- training_data2[c(errorInd,sampleCorr),]
+# Now run the SVM
+svm.linear = svm(class~.,
+data = equal_training_data,
+kernel = "linear",
+cost = 10,
+scale = TRUE)
+summary(svm.linear)
+
+```
+
+# ROC analysis
+
+```{r}
+library(ROCR)
+p <- predict(svm.linear,testing_data)
+pr <- prediction(as.numeric(p),as.numeric(testing_data$class))
+prf <- performance(pr, measure = "tpr", x.measure = "fpr")
+plot(prf)
+auc <- performance(pr, measure = "auc")
+auc <- auc@y.values[[1]]
+```
+
+(a) ROC (Receiver Operator Characteristic) is a plot that display the performance of a model across different classification threshold. The y-axis represents the True Positive Rate, meaning the number of true positive over the number of actual positives. The x-axis represents the False Positive Rate, which is the number of false positives over the total number of actual negatives. Higher thresholds result in fewer false positives at the cost of missing more true positives, while lower threshold lead to capturing more true positive but with more false positives. The plot captures this trend (assuming a non-random classifier) and helps choosing an appropriate threshold.
+
+(b) The ROC curve shows that the model performs better than random guessing, as it achieves a True Positive Rate of about 0.65 with a False Positive Rate below 0.2. This indicates the model is able to correctly identify a portion of the actual positives while keeping false positives relatively low at that threshold. While better than random guessing, a TPR 0.65 (the model identifies only 65% of the positive cases) is not particularly strong.
+
+# Model optimization
+
+```{r}
+
+# find best model parameter
+tune_out = tune(svm,
+                class~.,
+                data = equal_training_data,
+                kernel = "linear",
+                ranges = list(cost = c(0.001, 0.01, 0.1, 1,5,10,100)))
+summary(tune_out)
+```
+```{r}
+bestmod = tune_out$best.model
+summary(bestmod)
+```
+
+After tuning the linear SVM using a range of cost values, we found that the best model achieved a cross-validation error rate of ~26.3% at a cost value of 1. This performance represents a noticeable improvement over models trained with either very low or very high cost values, which resulted in significantly higher error rates. The tuning process helped identify a better trade-off between underfitting and overfitting, allowing the model to generalize more effectively to unseen data. 
+
+# Model comparison
+```{r}
+
+# find best model parameter
+tune_out = tune(svm,
+                class~.,
+                data = equal_training_data,
+                kernel = "polynomial",
+                ranges = list(cost = c(0.001, 0.01, 0.1, 1,5,10,100)))
+summary(tune_out)
+```
+
+```{r}
+bestmod = tune_out$best.model
+summary(bestmod)
+```
+
+```{r}
+
+# find best model parameter
+tune_out = tune(svm,
+                class~.,
+                data = equal_training_data,
+                kernel = "radial",
+                ranges = list(cost = c(0.001, 0.01, 0.1, 1,5,10,100)))
+summary(tune_out)
+```
+
+```{r}
+bestmod = tune_out$best.model
+summary(bestmod)
+```
+
+We repeated the analysis using SVMs with non-linear kernels, specifically the `polynomial` and `radial` kernels. Both models outperformed the linear SVM in terms of prediction accuracy. The `polynomial` kernel achieved the lowest cross-validation error rate of approximately ~24.1%, with performance stabilizing at cost values above 5. The radial kernel also performed well, reaching an error rate of ~24.4% at a cost value of 100. These improvements indicate that the data likely has non-linear relationships that the linear kernel fails to capture. Overall, the results suggest that both radial and polynomial kernels provide a better fit for the data and are more effective at making accurate predictions.
+
+# Extending this to algorithms more generally
+
+(a) You cannot use AIC on a classifier that detects humans in satellite images because such a model would not satisfy the assumptions of this method. One of the assumptions of AIC is that the model is a fixed parametric model estimated via maximum likelihood and intended to approximate the true data-generating process. However, deep learning classifiers such as CNNs, that are effective for complex image classification, are highly flexible, often overparameterized, and typically do not provide a well-defined likelihood function or interpretable parametric form, so AIC likely inapplicable.  For non-parametric models like CNNs, cross-validation is a more appropriate approach for model selection and hyperparameter tuning, while a separate hold-out test set should be used to evaluate final model performance, as these methods do not rely on the strong parametric assumptions required by AIC.
+
+
