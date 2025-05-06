@@ -68,6 +68,8 @@ First, let's examine how the model performs at predicting the training set. As w
 
 Now let's examine the test data predictions. As we can see from the confusion matrix, the model correctly predicted 247 negative class cases (i.e., correctly predicted that the participant did not make an error) and 55 positive class cases (i.e., correctly predicted that the participant made an error). However, it also incorrectly predicted 5 negative class cases (i.e., incorrectly predicted that the participant did not make an error), and 203 positive class cases (i.e., incorrectly predicted that the participant made an error).
 
+From those confusion matrices, we can see that the model is relatively accurate when it comes to predicting correct answers, however the model really struggles with properly predicting incorrect answers.
+
 For both the training data and the test data, the error rates are high (23% and 41% respectively). Our model is probably underfitting, which can be due to many things (such as the model being too simple, or the features selected being non-relevant). In our case, I would argue that the feature selection is suboptimal, as we can see from the importance table that the isDots variable's importance is extremely high (removing the control condition data would make sense here, which would allow us to remove this feature and only focus on the important ones). Also, the cohVec variable seems to be less important to the prediction of the model than I would have expected, however this can be explained by the fact that the coherence was adjusted for the participants to have approximately 70% and 90% correct (which means that some participants could have 70% correct for 10% coherence and other for 2% coherence), i.e. the coherence does not mean much wrt the correctness. 
 
 # ROC analysis
@@ -168,5 +170,15 @@ We repeated the analysis using SVMs with non-linear kernels, specifically the `p
 # Extending this to algorithms more generally
 
 (a) You cannot use AIC on a classifier that detects humans in satellite images because such a model would not satisfy the assumptions of this method. One of the assumptions of AIC is that the model is a fixed parametric model estimated via maximum likelihood and intended to approximate the true data-generating process. However, deep learning classifiers such as CNNs, that are effective for complex image classification, are highly flexible, often overparameterized, and typically do not provide a well-defined likelihood function or interpretable parametric form, so AIC likely inapplicable.  For non-parametric models like CNNs, cross-validation is a more appropriate approach for model selection and hyperparameter tuning, while a separate hold-out test set should be used to evaluate final model performance, as these methods do not rely on the strong parametric assumptions required by AIC.
+
+(b) Overfitting can still occur even when cross-validation is used, due to data leakage. This happens when information from the test set influences the training process, for example through improper feature engineering or if the hyperparameters are tuned based on the noise rather than the actual useful features.
+
+(c) Instead of using the validation set to determine the performance of the model, the lockbox method requires us to put aside part of the data that can only be accessed until the analysis protocol is clearly defined. This data is then only used to test the final performance of the model, once everything else has been decided, which allows us to see how well the model generalizes. This is also done in machine learning competitions, where the ultimate performance of the algorithm is evaluated on a separate set of data that is reserved for this purpose. This is very useful to prevent overfitting, as it ensures that the model has not been influenced by the test data during the training or model selection process.
+
+(d) To prevent overfitting, there are many other techniques that can be used.
+First of all, training with more data will always result in the model having less chance to overfit, as it makes it less likely for the model to memorize specific details and more likely to generalize.
+Regularization, such as L1 and L2, adds a penalty to the loss function based on the number of the model's parameters, which prevents the model from fitting overly complex patterns.
+Early stopping is another useful strategy: we can stop training when the model starts to overfit, ensuring it doesn’t learn noise or irrelevant details. Alternatively, reducing training time can help by preventing the model from completely memorizing the training data. 
+Lastly, choosing the right model also plays a crucial role, as depending on the task a simpler or more complex model might be required. If the data consists of linear relationships for example, using a complex non-linear model would probably result in overfitting.
 
 
