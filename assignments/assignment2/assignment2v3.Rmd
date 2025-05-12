@@ -17,16 +17,17 @@ In this assignment, you will practise with methods to assess the quality of mode
 
 The dataset used in this assignment comes from an experiment in which I examined decision making. Participants viewed displays of randomly moving dots, and had to decide whether the majority of those dots were moving in the left- or the rightward direction. They indicated their response with a button press, and we recorded their accuracy and response time. While the objective of the experiment was to examine the neural correlates of this decision making process, here we will focus on the behavioral effects. We will look at what variables in this dataset predict task performance for a single participant. The variables that we have recorded and that may potentially be relevant are:
 
-* `cohFac`, which is a factor that represents the proportion of dots that move into a single direction (the more dots move in one direction, the easier the task, so this is essentially a measure of task difficulty). When `cohFac` is 1, the task is easier than when `cohFac` is 0 (there is also a variable called `cohVec` which are the actual proportion of dots moving in a single direction used for this participant. You will see that those values differ between participants). 
-* `blocknum` (the block within the task)
-* `isDots` (there are dots trials, but also a control condition in which participants don't have to really make a decision, but instead just press the button indicated by the direction of an arrow on the screen)
-* `isLeft` (whether the dots are moving to the left or right)
-* `ER` (whether the participant answered the trial correctly, i.e., did not make an error (0) or incorrectly, i.e., made an error (1))
-* `RT` (response time in seconds)
+-   `cohFac`, which is a factor that represents the proportion of dots that move into a single direction (the more dots move in one direction, the easier the task, so this is essentially a measure of task difficulty). When `cohFac` is 1, the task is easier than when `cohFac` is 0 (there is also a variable called `cohVec` which are the actual proportion of dots moving in a single direction used for this participant. You will see that those values differ between participants).
+-   `blocknum` (the block within the task)
+-   `isDots` (there are dots trials, but also a control condition in which participants don't have to really make a decision, but instead just press the button indicated by the direction of an arrow on the screen)
+-   `isLeft` (whether the dots are moving to the left or right)
+-   `ER` (whether the participant answered the trial correctly, i.e., did not make an error (0) or incorrectly, i.e., made an error (1))
+-   `RT` (response time in seconds)
 
 Make sure you read the extra information about this dataset and the experiment in the file `datasetsEN.pdf`, which will help you better understand the experiment. Make sure you include your code in your answers (this is very easy when you use Rmarkdown).
 
 # Linear SVM
+
 We will start with making our basic regression model. In this case, we want to see whether it is possible to predict for participant 8 whether s/he is going to get a particular trial correct (so predicting the variable `ER`), you would run a logistic regression of `ER` on `RT`, `blocknum`, `isDots`, `cohFac`, and `isLeft`. Before doing so, select the data for this participant:
 
 ```{r}
@@ -36,7 +37,6 @@ We will start with making our basic regression model. In this case, we want to s
 dat<-read.table("/Users/mvugt/teaching/DataAnalytics&Communication/decision.dat",header=T)
 subj8 <- dat[dat$subjNo==8,]
 ```
-
 
 Then run the model using the following steps:
 
@@ -88,10 +88,7 @@ importance <- importance / max(importance)
 
 ```
 
-
-
 Describe the results of this SVM (5 pts)
-
 
 # ROC analysis
 
@@ -115,7 +112,6 @@ auc <- auc@y.values[[1]]
 
 Two of the factors that can make model fitting challenging are outliers and multicollinearity. Comment on whether those two issues are present in the data and whether they cause problems. Illustrate your comments with data/graphs as necessary.
 
-
 # Model optimization
 
 If our model is not very good, one issue could be that the model parameters are just not the best for describing the data. Here we find the best model parameters for a linear SVM. Use this code as a basis to report on how good this optimized model is (you can leave out the ROC analysis).
@@ -135,10 +131,9 @@ summary(bestmod)
 
 ```
 
-
 # Model comparison
 
-Finally, we can compare different models. Apart from linear SVMs, we can use other SVMs with a radial basis function, which works by replacing the "linear" in the kernel with "radial", or "polynomial". Repeat the analysis for those two kernels and report on the results. Focus just on the model's predictions, as importances are not valid for nonlinear kernels. 
+Finally, we can compare different models. Apart from linear SVMs, we can use other SVMs with a radial basis function, which works by replacing the "linear" in the kernel with "radial", or "polynomial". Repeat the analysis for those two kernels and report on the results. Focus just on the model's predictions, as importances are not valid for nonlinear kernels.
 
 ```{r}
 # repeat the same classification with a radial SVM kernel
@@ -164,19 +159,17 @@ summary(bestmod3)
 # Which of these models is best? And why?
 ```
 
-
-
 # Extending this to algorithms more generally
 
 Note: To do this question, you probably want to check back to the Perusall reading belonging to this week.
 
-(a) Say, you are working on creating a classifier to detect humans in satellite images. Can you use AIC in this case? If so, why? If not, why not? What other methods could you use to compare different versions of your classifier? What model comparison methods are good for what kinds of models? 
+(a) Say, you are working on creating a classifier to detect humans in satellite images. Can you use AIC in this case? If so, why? If not, why not? What other methods could you use to compare different versions of your classifier? What model comparison methods are good for what kinds of models?
 
 In these kinds of large computational projects, you always have to worry about overfitting. One of the readings for this week talks about the danger of overfitting. As we learnt in the reading for this week, overfitting is deceptively easy, even when you use cross-validation.
 
 (b) How can overfitting still occur, even when you use cross-validation?
 
-(c) How is the lockbox method (also known as train-test/validation) different from cross-validation, and why is it effective to prevent overfitting? 
+(c) How is the lockbox method (also known as train-test/validation) different from cross-validation, and why is it effective to prevent overfitting?
 
 (d) What other methods could you use to prevent overfitting? For each method you mention, briefly explain how it helps to prevent overfitting.
 

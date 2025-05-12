@@ -1,0 +1,9 @@
+---
+title: "Shiny Plot Desctiption"
+author: "Sebastian Pusch (S5488079), Ivan Hegeman (s4789725)"
+output: 
+  pdf_document:
+    number_sections: false
+---
+
+To produce the shiny graph, I first thought about what data to display. Since the main focus of the dataset we chose are disaster frequencies, that seemed like the obvious data to visualize. I thought that a world map with color would be an appropriate and good looking visualization, using color mappings to visualize the difference between countries. Since some (large) countries had very large frequency values compared to all other countries, I decided to use a logarithmic scale. Since there were difference types of disaster indicators (flood, fire, etc.), I decided to add the possibility to filter by one or more of these values, summing up the frequencies. This allows users to both look for individual indicators but also easily group them together. Finally, I added a slider that allows users to select a range of years (this supports selecting single year) and again summing the frequencies. This allows to easily observe patterns over years. Additionally, since the scale is logarithmic and it is impossible to determine the absolute frequency by looking at the color, I added a tooltip that shows the name of the country and the corresponding frequency when hovering the country with the mouse. This allows to look at specific numeric details without cluttering the whole plot.
