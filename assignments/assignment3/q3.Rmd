@@ -1,0 +1,7 @@
+---
+title: "q3"
+output: html_document
+---
+
+Shiny graphs are useful because they make it easy to explore data interactively. For example, instead of showing just one static graph, you can allow users to choose which variables to include or filter the data by year or type. This is really helpful when dealing with large or complex datasets like climate data, where different users might want to focus on different things. In our case, using a Shiny app helped visualize climate related disaster frequency trends per country over time, and users could select which type of disasters to include. On the downside, Shiny apps can be slower to load and need more effort to build and maintain compared to flat graphs. In general, it introduces the complexity of needing a running service instead of a simple static file. Additionally, for more inexperienced users, a simple plot with a clear message might be more effective, as the user might not know how to interact properly with the shiny graph and miss important details.
+
