@@ -68,7 +68,7 @@ First, let's examine how the model performs at predicting the training set. As w
 
 Now let's examine the test data predictions. As we can see from the confusion matrix, the model correctly predicted 247 negative class cases (i.e., correctly predicted that the participant did not make an error) and 55 positive class cases (i.e., correctly predicted that the participant made an error). However, it also incorrectly predicted 5 negative class cases (i.e., incorrectly predicted that the participant did not make an error), and 203 positive class cases (i.e., incorrectly predicted that the participant made an error).
 
-From those confusion matrices, we can see that the model is relatively accurate when it comes to predicting correct answers, however the model really struggles with properly predicting incorrect answers.
+From those confusion matrices, we can see that the model is relatively accurate when it comes to predicting incorrect answers, however the model really struggles with properly predicting correct answers.
 
 For both the training data and the test data, the error rates are high (23% and 41% respectively). Our model is probably underfitting, which can be due to many things (such as the model being too simple, or the features selected being non-relevant). In our case, I would argue that the feature selection is suboptimal, as we can see from the importance table that the isDots variable's importance is extremely high (removing the control condition data would make sense here, which would allow us to remove this feature and only focus on the important ones). Also, the cohVec variable seems to be less important to the prediction of the model than I would have expected, however this can be explained by the fact that the coherence was adjusted for the participants to have approximately 70% and 90% correct (which means that some participants could have 70% correct for 10% coherence and other for 2% coherence), i.e. the coherence does not mean much wrt the correctness. 
 
@@ -91,6 +91,7 @@ auc <- auc@y.values[[1]]
 # Data problems
 ```{r}
 # outliers
+library(ggplot2)
 ggplot(training_data, aes(x = x.RT, fill = class)) +
   geom_density(alpha = 0.5) +
   labs(title = "Density plot of RT by class", x = "Response time", fill = "Error") + 
