@@ -1,0 +1,110 @@
+---
+title: "Data Science Assignment 2"
+author: "Sebastian Pusch (S5488079), Ivan Hegeman (s4789725)"
+output:
+  pdf_document:
+    number_sections: true
+  html_document: default
+---
+
+```{r echo=TRUE, results='hide', message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lsr)
+library(nortest)
+
+data = read.table('./data/decision.dat', header = T)
+data$isHighCoh = data$cohFac > .5
+data$coherence = ifelse(data$isHighCoh == 0, "Low Coherence", "High Coherence")
+dataNoErr = data %>% filter(ER == 0)
+subj1NoErr = data %>% filter(subjNo == 1, isDots == 1)
+```
+
+# T-test
+
+# Non-parametric alternatives
+
+# One-way ANOVA
+
+```{r}
+resOneWay = aov(RT ~ isHighCoh, data = subj1NoErr)
+summary(resOneWay)
+
+ggplot(subj1NoErr, aes(x = coherence, y = RT, fill = coherence)) +
+  geom_boxplot(width = 0.6, outlier.shape = 21, outlier.fill = "white") +
+  labs(
+    title = "Reaction Time by Coherence Level (Participant 1)",
+    x = "Coherence Condition",
+    y = "Response Time (s)"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+eta = etaSquared(resOneWay, type = 1)
+summary(eta)
+```
+
+(a) A one-way ANOVA revealed a significant effect of coherence on response time for participant 1, F(1, 1222) = 160.5, p \< .001. Participants responded significantly faster during high-coherence trials than during low-coherence trials.
+
+(b) [TODO]
+
+(c) No, we don’t need to correct for multiple comparisons in this case. Although we ran both a t-test and a one-way ANOVA, they were both testing the same hypothesis: whether response times differ between low and high coherence trials for participant 1. Multiple comparison correction is only needed when testing multiple hypotheses or doing several comparisons across different groups.
+
+(d) We obtained $\eta^2=0.1161$. This means that approximately 11.6% of the variance in response time can be explained by the coherence level (high vs. low) for participant 1. According to the benchmarks from Lakens (2013), this represents a medium-to-large effect size.
+
+# Two-way ANOVA
+
+```{r}
+resTwoWay = aov(RT ~ isHighCoh * isLeft, data = dataNoErr)
+summary(resTwoWay)
+
+left = 
+
+interaction.plot(
+  x.factor = dataNoErr$coherence,
+  trace.factor = ifelse(dataNoErr$isLeft, "Left", "Right"),
+  response = dataNoErr$RT,
+  fun = mean,
+  type = "b",
+  col = c("red", "blue"),
+  ylab = "Mean RT",
+  xlab = "Coherence Level",
+  legend = TRUE,
+  trace.label = "Direction"
+)
+```
+
+(a) A two-way ANOVA revealed a significant main effect of coherence, F(1, 51230) = 438.7, p \< .001, indicating that participants responded faster on high-coherence trials than low-coherence trials. There was no significant main effect of direction, F(1, 51230) = 2.97, p = .0848, and no significant interaction between coherence and direction, F(1, 51230) = 1.90, p = .1685.
+
+# Repeated-measures ANOVA
+
+```{r}
+resRep <- aov(
+  RT ~ isHighCoh * isLeft + Error(subjNo / (isHighCoh * isLeft)), 
+  data = dataNoErr)
+
+summary(data)
+
+group1 <- dataNoErr %>% filter(isHighCoh == 0, isLeft == 1)
+group2 <- dataNoErr %>% filter(isHighCoh == 0, isLeft == 0)
+group3 <- dataNoErr %>% filter(isHighCoh == 1, isLeft == 1)
+group4 <- dataNoErr %>% filter(isHighCoh == 1, isLeft == 0)
+
+lillie.test(group1$RT)
+lillie.test(group2$RT)
+lillie.test(group3$RT)
+lillie.test(group4$RT)
+```
+
+
+(a) A repeated-measures ANOVA is more appropriate in this case because the same participants are tested in all conditions, so each participant contributes response times for both coherence levels (high and low) and both directions (left and right). This means the data are not independent, which is a key assumption of a regular two-way ANOVA. A repeated-measures ANOVA takes into account the within-subject structure of the data by modeling the variation due to individual differences.
+
+(b) We conducted a repeated-measures ANOVA to examine the effects of coherence level (high vs low) and stimulus direction (left vs right) on response time, accounting for the fact that each participant experienced all conditions.
+There was a significant main effect of coherence, F(1, 51226) = 106.12, p \< .001, indicating that participants responded faster on high-coherence trials compared to low-coherence trials.
+There was no significant main effect of direction, F(1, 51226) = 0.36, p = .551, and no significant interaction between coherence and direction, F(1, 51226) = 0.04, p = .852. This suggests that the effect of coherence on response time was consistent regardless of the stimulus direction.
+Compared to the regular two-way ANOVA in Question 4, the repeated-measures ANOVA produced a similar pattern of results, but is more appropriate for this within-subjects design and provides more reliable estimates by accounting for individual differences.
+
+(c)
+One of the key assumptions of ANOVA is that the dependent variable (in this case, response time) is normally distributed within each condition.
+To test this, we ran the Lilliefors test for normality on the RT distributions in all four combinations of coherence level (high vs low) and stimulus direction (left vs right).
+In all four conditions, the test returned very low p-values ($< 2.2e-16$), indicating a significant deviation from normality.
+Therefore, the assumption of normality is violated in this dataset. This suggests that a non-parametric alternative is more appropriate.
