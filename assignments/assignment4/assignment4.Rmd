@@ -92,6 +92,34 @@ iq_test(n, M, nSims, SD, 0.01)
 
 When we change the p-value threshold from 0.05 to 0.01 and with a sample size of 51, we observe a statistical Power of 57.4%. Since the p-value threshold is lower, there is also a lower chance of observing a significant result when the true mean differs from the null hypothesis (as in our simulation) and this is reflected in a lower statistical power. However, interestingly, the statistical power with a sample size of 51 and p-value threshold of 0.01 (=57.4%) is still greater than the statistical power with sample size 26 and p-value 0.05 (=50%). In my opinion this highlights the importance of sample size and degrees of freedom for statistical power.
 
+# Doing a power analysis
+
+(a) Using the spreadsheet, we could find an effect size \(d_s\) of 0.701333 by filling in the sample sizes for the soft and loud conditions (20 and 22 respectively) as well as the t-value from the independent t-test (2.27). This effect size value indicates a medium to large difference in the outcome between the softer and louder voice conditions, in other words the voice volume has a substantial on the perceived distance.
+
+(b) The following image shows the values from the assignment entered into G*power as well as the found effect size. From this, we can see that to achieve 80% statistical power for this experiment, we would need at least 66 total participants, with 33 in each group. 
+
+```{r}
+library(knitr)
+include_graphics("gpower_b.png")
+```
+
+(c) Changing the p-value from 0.05 to 0.005 in G*power (in the "\(\alpha\) err prob" box) yields a required total sample size of 114 (57 per group) to achieve 80% statistical power. This seems doable, but it will definitely require careful planning and an effective method for recruiting participants.
+
+(d) Entering the values from the assignment into G*power for a within subjects ANOVA with one group and three measurements, and the effect size that has been computed using the partial eta squared of the ANOVA (= 0.27), we get the following results for a p-value of 0.05 and a statistical power of 80%:
+
+```{r}
+library(knitr)
+include_graphics("gpower_d.png")
+```
+
+From this, we can see that we would need at least 16 participants to replicate this experiment with 80% statistical power. The following graph shows the relationship between wanted statistical power and required sample size, as we can see the required sample size increases exponentially as the wanted statistical power increases.
+
+```{r}
+library(knitr)
+include_graphics("gpower_graph.png")
+```
+
+(e) Using the spreadsheet, we find \(w^2_p = 0.253236\). Filling this in in G*power, we get an effect size of 0.5823325, and a required sample size of at least 17 to obtain 80% statistical power. As we can see, the required sample size can vary depending on the method used to measure effect size. This means we must be careful when deciding for a certain sample size, as different effect size measures can lead to different estimates.
 
 # Doing a p-curve analysis
 
@@ -152,11 +180,3 @@ We then plotted these p-values by binning them into five equal-width intervals r
 The resulting plot reveals a right-skewed distribution, with the majority of p-values concentrated in the first bin (< 0.01). The remaining p-values appear evenly distributed across the middle bins, while the final bin (0.04–0.05) contains no values.
 
 Taken together, the p-curve analysis suggests that the significant findings related to positive symptoms in the MCT literature are unlikely to be due to random chance or selective reporting. Instead, the observed distribution aligns with what would be expected if MCT has a genuine effect on reducing positive psychotic symptoms. This is consistent with the findings reported in Meinhart et al. (2025).
-
-
-
-
-
-
-
-
