@@ -1,12 +1,61 @@
 ---
 title: "Data Science Assignment 6"
-author: "Sebastian Pusch (S5488079), Ivan Hegeman (s4789725)"
+author: "Sebastian Pusch (s5488079), Ivan Hegeman (s4789725)"
 output:
   pdf_document:
     number_sections: true
   html_document: default
 ---
 
+```{r echo=TRUE, results='hide', message=FALSE, warning=FALSE}
+library(tidyverse)
+library(lsr)
+library(nortest)
+
+data = read.table('./data/decision.dat', header = T)
+data$isHighCoh = data$cohFac > .5
+dataNoErr = data %>% filter(ER == 0, isDots == 1)
+dataErr = data %>% filter(isDots == 1)
+```
+
 # Doing a Bayesian Data Analysis
+```{r message=FALSE, warning=FALSE}
+library(BayesFactor)
+rt_summary <- dataNoErr %>%
+  group_by(subjNo, isHighCoh) %>%
+  summarise(mean_RT = mean(RT))
+LowCoh <- subset(rt_summary, isHighCoh == FALSE)$mean_RT
+HighCoh <- subset(rt_summary, isHighCoh == TRUE)$mean_RT
+
+t.test(LowCoh, HighCoh, paired = TRUE)
+
+ttestBF(LowCoh, HighCoh, paired = TRUE)
+
+```
+(a) As we can see the Bayes factor is approximately 2345. This is a very high value, which indicates that the alternative hypothesis is 2345 more likely than the null hypothesis. For our test, this means that it is 2345 times mores likely that there is a difference in the mean response times.
+
+(b) For this data, the Bayesian and Frequentist t-tests do not lead to different conclusions. Both provide very strong evidence that there is a difference in response times between the high and low coherence conditions.
+
+(c) Opposed to Frequentist t-tests, Bayesian t-tests evaluate the data under both the null and the alternative hypothesis. This avoids situations where the null hypothesis is rejected even though the alternative is even less likely, which can happen with p-values since they only consider how unlikely the data are under the null, not how well the alternative fits.
+Another issue is that Frequentist t-tests cannot quantify evidence in favor of the null hypothesis. A non-significant p-value only indicates a failure to reject the null, not that the null is likely true. In contrast, Bayesian t-tests explains for the null by comparing how well the data support it relative to the alternative.
 
 # Bayesian Regression
+```{r message=FALSE, warning=FALSE}
+block_summary <- dataErr %>%
+  group_by(subjNo, blocknum) %>%
+  summarise(
+    mean_RT = mean(RT),
+    error_rate = mean(ER == 1)
+  )
+
+ggplot(block_summary, aes(x = error_rate, y = mean_RT)) +
+  geom_point() +
+  labs(x = "Error Rate", y = "Mean RT")
+
+frequentist_lm <- lm(mean_RT ~ error_rate, data = block_summary)
+summary(frequentist_lm)
+
+bayesian_lm <- regressionBF(mean_RT ~ error_rate, data = block_summary)
+head(bayesian_lm)
+```
+Both the Frequentist and Bayesian regressions show that error rate significantly predicts response time. The Frequentist linear regression showed a significant positive relationship between error rate and mean RT (β = 0.436, SE = 0.105, t(722) = 4.15, p < 0.0001), indicating that higher error rates are associated with longer response times (however the effect size is small, with R² = 0.023). The Bayesian regression showed that the data is about 349 times more likely under the model that includes error_rate than under the intercept only model. This means that there is very strong evidence that including error_rate as a predictor improves the model's ability to explain response time.
