@@ -1,0 +1,12 @@
+---
+title: "Data Science Assignment 6"
+author: "Sebastian Pusch (S5488079), Ivan Hegeman (s4789725)"
+output:
+  pdf_document:
+    number_sections: true
+  html_document: default
+---
+
+# Doing a Bayesian Data Analysis
+
+# Bayesian Regression

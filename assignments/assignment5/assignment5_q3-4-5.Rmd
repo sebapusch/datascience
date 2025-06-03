@@ -1,5 +1,5 @@
 ---
-title: "Data Science Assignment 2"
+title: "Data Science Assignment 5"
 author: "Sebastian Pusch (S5488079), Ivan Hegeman (s4789725)"
 output:
   pdf_document:
@@ -16,12 +16,45 @@ data = read.table('./data/decision.dat', header = T)
 data$isHighCoh = data$cohFac > .5
 data$coherence = ifelse(data$isHighCoh == 0, "Low Coherence", "High Coherence")
 dataNoErr = data %>% filter(ER == 0)
-subj1NoErr = data %>% filter(subjNo == 1, isDots == 1)
+subj1NoErr = dataNoErr %>% filter(subjNo == 1, isDots == 1)
 ```
 
 # T-test
+```{r}
+subj1Low <- subj1NoErr %>% filter(isHighCoh == FALSE)
+subj1High <- subj1NoErr %>% filter(isHighCoh == TRUE)
+t.test(subj1Low$RT, subj1High$RT, paired = FALSE)
+```
+
+(a) In our case, as we only perform a t-test with one subject, it should be an independent samples t-test (i.e. we do not need to pair values as we only have one subject).
+
+(b) A two-sample t-test was conducted to compare reaction times (RTs, in seconds) between low-coherence and high-coherence trials for subject 1. The average RT was significantly higher for low-coherence trials (M = 1.227 s, SD = 0.546) than for high-coherence trials (M = 0.897 s, SD = 0.296). This difference was statistically significant, t(645.85) = 11.63, p < 0.001, 95% CI [0.27, 0.39].
+
+```{r}
+rt_summary <- dataNoErr %>%
+  group_by(subjNo, isHighCoh) %>%
+  summarise(mean_RT = mean(RT))
+
+LowCoh <- rt_summary$mean_RT[rt_summary$isHighCoh == FALSE]
+HighCoh <- rt_summary$mean_RT[rt_summary$isHighCoh == TRUE]
+
+t.test(LowCoh, HighCoh, paired = TRUE)
+```
+
+(c) In this situation, we need a paired-samples t-test, as the experiment was run within subjects. The paired t-test compares the mean difference in reaction times between the two conditions, while also taking into account that participants took part in both conditions.
+
+(d) A paired-samples t-test was conducted to compare reaction times between low-coherence and high-coherence trials. There was a significant difference in reaction times between the two conditions, t(22) = 4.99, p < .001, with response times being lower in the high-coherence condition (mean difference = 0.094, 95% CI [0.055, 0.133]).
 
 # Non-parametric alternatives
+
+```{r}
+wilcox.test(LowCoh, HighCoh, paired = TRUE)
+```
+
+
+(a) In our case, the Wilcoxon signed-rank test would be the most suited choice, as it does not assume normality of the differences and it compares two related samples (i.e. paired data).
+
+(b) A Wilcoxon signed-rank test was conducted to compare reaction times between low- and high-coherence conditions across participants. The test revealed a significant difference in reaction times, V = 272, p < .001, indicating that the median reaction time in the high-coherence condition was significantly lower than in the low-coherence condition.
 
 # One-way ANOVA
 
@@ -43,9 +76,9 @@ eta = etaSquared(resOneWay, type = 1)
 summary(eta)
 ```
 
-(a) A one-way ANOVA revealed a significant effect of coherence on response time for participant 1, F(1, 1222) = 160.5, p \< .001. Participants responded significantly faster during high-coherence trials than during low-coherence trials.
+(a) A one-way ANOVA revealed a significant effect of coherence on response time for participant 1, F(1, 1059) = 159.1, p \< .001. Participants responded significantly faster during high-coherence trials than during low-coherence trials.
 
-(b) [TODO]
+(b) As we can notice, both the ANOVA and the two-samples t-test have the same result: participants responded significantly faster during high-coherence trials than during low-coherence trials.
 
 (c) No, we don’t need to correct for multiple comparisons in this case. Although we ran both a t-test and a one-way ANOVA, they were both testing the same hypothesis: whether response times differ between low and high coherence trials for participant 1. Multiple comparison correction is only needed when testing multiple hypotheses or doing several comparisons across different groups.
 
@@ -108,3 +141,12 @@ One of the key assumptions of ANOVA is that the dependent variable (in this case
 To test this, we ran the Lilliefors test for normality on the RT distributions in all four combinations of coherence level (high vs low) and stimulus direction (left vs right).
 In all four conditions, the test returned very low p-values ($< 2.2e-16$), indicating a significant deviation from normality.
 Therefore, the assumption of normality is violated in this dataset. This suggests that a non-parametric alternative is more appropriate.
+
+# What test for what data?
+(a) For a t-test, data that compares sleep duration (= dependent variable) between two groups would be suited. One group drank coffee before bed, the other did not (independent variable = coffee condition, 2 levels). A t-test is appropriate because it compares the means of two independent groups on a continuous variable.
+
+(b) For a one-way ANOVA, data that compares weight loss (= dependent variable) between three groups would be suited. Participants follow either an omnivore, vegan, or low-carb diet (independent variable = diet type, 3 levels). A one-way ANOVA is appropriate because it compares the means of more than two independent groups on a continuous variable.
+
+(c) For a two-way ANOVA, data that compares study performance (= dependent variable) based on two independent variables would be suited: music genre (classical vs. rock) and study environment (quiet vs. noisy), each with 2 levels. A two-way ANOVA is appropriate because it examines the main effects and interaction of two independent variables on a continuous outcome.
+
+(d) For a repeated measures ANOVA, data that measures heart rate (= dependent variable) at multiple time points within the same participants would be suited. Heart rate is recorded before training, immediately after, and one hour later (independent variable = time, 3 within-subject levels). A repeated measures ANOVA is appropriate because it analyzes changes in a continuous variable across multiple conditions within the same subjects.
